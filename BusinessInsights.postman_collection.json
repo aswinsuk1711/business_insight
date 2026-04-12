@@ -1,0 +1,219 @@
+{
+  "info": {
+    "name": "Business Insights API",
+    "description": "Complete API collection for the Business Insights Dashboard",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://business-insights-api.onrender.com",
+      "description": "Change to your deployed Render URL or http://localhost:5000 for local"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "description": "JWT token - auto-set after login"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const res = pm.response.json();",
+                  "  pm.collectionVariables.set('token', res.data.token);",
+                  "  pm.test('Login successful', () => pm.expect(res.success).to.be.true);",
+                  "  pm.test('Token received', () => pm.expect(res.data.token).to.be.a('string'));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@business.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/login", "host": ["{{base_url}}"], "path": ["login"] },
+            "description": "Authenticate user with email and password. Returns JWT token."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Login successful\",\n  \"data\": {\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"user\": {\n      \"id\": \"65f1a2b3c4d5e6f7a8b9c0d1\",\n      \"email\": \"admin@business.com\"\n    }\n  }\n}"
+            },
+            {
+              "name": "Invalid Credentials",
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"success\": false,\n  \"message\": \"Invalid email or password\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login - Invalid Credentials",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"wrong@email.com\",\n  \"password\": \"wrongpass\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/login", "host": ["{{base_url}}"], "path": ["login"] },
+            "description": "Test with invalid credentials - should return 401"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Business",
+      "item": [
+        {
+          "name": "Get Business Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has business data', () => {",
+                  "  const res = pm.response.json();",
+                  "  pm.expect(res.success).to.be.true;",
+                  "  pm.expect(res.data).to.have.property('name');",
+                  "  pm.expect(res.data).to.have.property('rating');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/business", "host": ["{{base_url}}"], "path": ["business"] },
+            "description": "Get business profile details. Requires Bearer token."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Business details fetched successfully\",\n  \"data\": {\n    \"_id\": \"65f1a2b3c4d5e6f7a8b9c0d2\",\n    \"name\": \"ABC Salon\",\n    \"category\": \"Beauty Salon\",\n    \"address\": \"Hyderabad, Telangana, India\",\n    \"phone\": \"9876543210\",\n    \"rating\": 4.2,\n    \"total_reviews\": 120\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Business - No Token",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/business", "host": ["{{base_url}}"], "path": ["business"] },
+            "description": "Should return 401 - no authorization token"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Insights",
+      "item": [
+        {
+          "name": "Get Insights",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Has insights data', () => {",
+                  "  const res = pm.response.json();",
+                  "  pm.expect(res.success).to.be.true;",
+                  "  pm.expect(res.data).to.have.property('profile_views');",
+                  "  pm.expect(res.data).to.have.property('phone_calls');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/insights", "host": ["{{base_url}}"], "path": ["insights"] },
+            "description": "Get business insights data. Requires Bearer token."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Insights fetched successfully\",\n  \"data\": {\n    \"_id\": \"65f1a2b3c4d5e6f7a8b9c0d3\",\n    \"profile_views\": 1200,\n    \"search_views\": 800,\n    \"website_clicks\": 150,\n    \"phone_calls\": 60,\n    \"direction_requests\": 40\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reviews",
+      "item": [
+        {
+          "name": "Get All Reviews",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Returns array', () => {",
+                  "  const res = pm.response.json();",
+                  "  pm.expect(res.success).to.be.true;",
+                  "  pm.expect(res.data).to.be.an('array');",
+                  "  pm.expect(res.data.length).to.be.greaterThan(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": { "raw": "{{base_url}}/reviews", "host": ["{{base_url}}"], "path": ["reviews"] },
+            "description": "Get all reviews sorted by date (newest first). Requires Bearer token."
+          },
+          "response": [
+            {
+              "name": "Success",
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"success\": true,\n  \"message\": \"Reviews fetched successfully\",\n  \"data\": [\n    {\n      \"_id\": \"65f1a2b3c4d5e6f7a8b9c0d4\",\n      \"name\": \"Ravi Kumar\",\n      \"rating\": 5,\n      \"comment\": \"Absolutely fantastic service!\",\n      \"date\": \"2026-03-20\"\n    },\n    {\n      \"_id\": \"65f1a2b3c4d5e6f7a8b9c0d5\",\n      \"name\": \"Priya Sharma\",\n      \"rating\": 4,\n      \"comment\": \"Nice experience overall.\",\n      \"date\": \"2026-03-18\"\n    }\n  ]\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "API Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": { "raw": "{{base_url}}/", "host": ["{{base_url}}"], "path": [""] },
+            "description": "Check if the API is running"
+          }
+        }
+      ]
+    }
+  ]
+}
