@@ -2,7 +2,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ── Change this to your deployed Render URL after deployment ─────────────────
-const BASE_URL = 'http://localhost:5000';
+const BASE_URL = 'https://business-insight-2.onrender.com';
 // For local dev: 'http://10.0.2.2:5000' (Android emulator) or 'http://localhost:5000'
 
 const TOKEN_KEY = '@business_insights_token';
